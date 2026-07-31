@@ -28,7 +28,7 @@ public class RechercheRecensement {
             // rechercherPopulationRegion(em, "76");
             // rechercherVillesPopulationDepartement(em, "78", 1000L, 10000L);
             // rechercherVillesPopulationRegion(em, "76", 1000L, 10000L);
-             rechercherVillesPopulationFrance(em, 100000L, 500000L);
+            // rechercherVillesPopulationFrance(em, 100000L, 500000L);
 
         } finally {
             em.close();
