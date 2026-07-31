@@ -5,14 +5,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
+    <groupId>com.projetJpa</groupId>
     <artifactId>recensement-jpa</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Projet JPA - Recensement</name>
+    <description>Integration des donnees de recensement de population en base via JPA/Hibernate</description>
+
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <hibernate.version>6.4.4.Final</hibernate.version>
+        <maridb.version>10.4.32</maridb.version>
     </properties>
 
     <dependencies>
