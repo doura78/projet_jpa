@@ -195,11 +195,18 @@ public class RechercheRecensement {
      * @param min population minimale
      * @param max population maximale
      */
-    public static void rechercherVillesPopulationFrance(EntityManager em, String codeDepartement, Long min, Long max) {
+    public static void rechercherVillesPopulationFrance(EntityManager em, Long min, Long max) {
 
         String jpql = "SELECT v FROM Ville v WHERE v.populationTotale BETWEEN :min AND :max ORDER BY v.population";
 
         TypedQuery<Ville> query = em.createQuery(jpql, Ville.class);
+        query.setParameter("min", min);
+        query.setParameter("max", max);
+        List<Ville> villes =query.getResultList();
+
+        for (Ville ville : villes) {
+            System.out.println(ville.getNom() + "_" + ville.getPopulationTotale());
+        }
 
     }
 
