@@ -7,9 +7,7 @@ import java.util.List;
 
 /**
  * Représente une région française.
- * <p>
  * Une région possède un code, un nom et regroupe plusieurs départements.
- * </p>
  */
 @Entity
 @Table(name = "region")
@@ -137,10 +135,6 @@ public class Region {
      */
     @Override
     public String toString() {
-        return "Region{" +
-                "id=" + id +
-                ", code='" + code + '\'' +
-                ", nom='" + nom + '\'' +
-                '}';
+        return nom ;
     }
 }

@@ -7,10 +7,9 @@ import java.util.List;
 
 /**
  * Représente un département français rattaché à une région.
- * <p>
+
  * Un département possède un code, un nom et une région de rattachement.
  * Il peut également contenir plusieurs villes.
- * </p>
  */
 @Entity
 @Table(name = "departement")
@@ -165,10 +164,6 @@ public class Departement {
      */
     @Override
     public String toString() {
-        return "Departement{" +
-                "id=" + id +
-                ", code='" + code + '\'' +
-                ", nom='" + nom + '\'' +
-                '}';
+        return  getNom() + " - " + region;
     }
 }

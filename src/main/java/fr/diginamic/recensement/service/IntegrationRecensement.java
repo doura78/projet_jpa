@@ -11,15 +11,21 @@ import jakarta.persistence.EntityManager;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-
-
-import static java.lang.Long.parseLong;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Classe exécutable qui importe le fichier recensement.csv en base.
+ * Importe les données du recensement en base de données.
+ * Cette classe lit le fichier Communes.csv.
+ * Elle utilise aussi le fichier Departements.csv pour récupérer le nom des départements.
  */
 public class IntegrationRecensement {
 
+    /**
+     * Lance l'import des régions, départements et villes.
+     *
+     * @param args arguments de la ligne de commande
+     */
     public static void main(String[] args) {
 
         EntityManager em = JpaUtil.getEntityManagerFactory().createEntityManager();
@@ -28,74 +34,94 @@ public class IntegrationRecensement {
         DepartementDao departementDao = new DepartementDao(em);
         VilleDao villeDao = new VilleDao(em);
 
-        try (BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/Communes.csv"))) {
+        try {
+            Map<String, String> mapDepartements = chargerDepartements("src/main/resources/Departements.csv");
 
-            em.getTransaction().begin();
+            try (BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/Communes.csv"))) {
 
-            String ligne = reader.readLine();
+                em.getTransaction().begin();
 
-            while ((ligne = reader.readLine()) != null) {
+                String ligne = reader.readLine();
 
-                String[] tokens = ligne.split(";");
+                while ((ligne = reader.readLine()) != null) {
 
-                if (tokens.length < 10) {
-                    continue;
+                    String[] tokens = ligne.split(";");
+
+                    if (tokens.length < 10) {
+                        continue;
+                    }
+
+                    String codeRegion = tokens[0].trim();
+                    String nomRegion = tokens[1].trim();
+                    String codeDepartement = tokens[2].trim();
+                    String codeCommune = tokens[5].trim();
+                    String nomCommune = tokens[6].trim();
+
+                    Long populationMunicipale = parseLong(tokens[7]);
+                    Long populationCompteeApart = parseLong(tokens[8]);
+                    Long populationTotale = parseLong(tokens[9]);
+
+                    Region region = regionDao.findByCode(codeRegion);
+                    if (region == null) {
+                        region = new Region(codeRegion, nomRegion);
+                        regionDao.save(region);
+                        System.out.println("Nouvelle région : " + region.getCode() + " - " + region.getNom());
+                    } else if (region.getNom() == null || region.getNom().isBlank()) {
+                        region.setNom(nomRegion);
+                        regionDao.save(region);
+                        System.out.println("Région mise à jour : " + region.getCode() + " - " + region.getNom());
+                    }
+
+                    String nomDepartement = mapDepartements.getOrDefault(codeDepartement, codeDepartement);
+
+                    Departement departement = departementDao.findByCode(codeDepartement);
+                    if (departement == null) {
+                        departement = new Departement();
+                        departement.setCode(codeDepartement);
+                        departement.setNom(nomDepartement);
+                        departement.setRegion(region);
+                        departementDao.save(departement);
+                        System.out.println("Nouveau département : " + departement.getCode() + " - " + departement.getNom());
+                    } else {
+                        if (departement.getNom() == null || departement.getNom().isBlank() || departement.getNom().equals(departement.getCode())) {
+                            departement.setNom(nomDepartement);
+                        }
+                        if (departement.getRegion() == null) {
+                            departement.setRegion(region);
+                        }
+                        departementDao.save(departement);
+                        System.out.println("Département mis à jour : " + departement.getCode() + " - " + departement.getNom());
+                    }
+
+                    Ville villeExistante = villeDao.findByCodeCommune(codeCommune);
+                    if (villeExistante == null) {
+                        Ville ville = new Ville();
+                        ville.setNom(nomCommune);
+                        ville.setPopulation(populationTotale);
+                        ville.setPopulationMunicipale(populationMunicipale);
+                        ville.setPopulationCompteeApart(populationCompteeApart);
+                        ville.setPopulationTotale(populationTotale);
+                        ville.setCodeCommune(codeCommune);
+                        ville.setDepartement(departement);
+                        villeDao.save(ville);
+                        System.out.println("Nouvelle ville : " + ville.getNom() + " / " + ville.getCodeCommune());
+                    } else {
+                        villeExistante.setNom(nomCommune);
+                        villeExistante.setPopulation(populationTotale);
+                        villeExistante.setPopulationMunicipale(populationMunicipale);
+                        villeExistante.setPopulationCompteeApart(populationCompteeApart);
+                        villeExistante.setPopulationTotale(populationTotale);
+                        villeExistante.setCodeCommune(codeCommune);
+                        villeExistante.setDepartement(departement);
+                        villeDao.save(villeExistante);
+                        System.out.println("Ville mise à jour : " + villeExistante.getNom() + " / " + villeExistante.getCodeCommune());
+                    }
+
                 }
 
-                String codeRegion = tokens[0].trim();
-                String nomRegion = tokens[1].trim();
-                String codeDepartement = tokens[2].trim();
-                String codeCommune = tokens[5].trim();
-                String nomCommune = tokens[6].trim();
-
-                Long populationMunicipale = parseLong(tokens[7]);
-                Long populationCompteeApart = parseLong(tokens[8]);
-                Long populationTotale = parseLong(tokens[9]);
-
-                Region region = regionDao.findByCode(codeRegion);
-                if (region == null) {
-                    region = new Region(codeRegion, nomRegion);
-                    regionDao.save(region);
-                } else if (region.getNom() == null || region.getNom().isBlank()) {
-                    region.setNom(nomRegion);
-                    regionDao.save(region);
-                }
-
-                Departement departement = departementDao.findByCode(codeDepartement);
-                if (departement == null) {
-                    departement = new Departement();
-                    departement.setCode(codeDepartement);
-                    departement.setNom(codeDepartement);
-                    departement.setRegion(region);
-                    departementDao.save(departement);
-                } else if (departement.getRegion() == null) {
-                    departement.setRegion(region);
-                }
-
-                Ville villeExistante = villeDao.findByCodeCommune(codeCommune);
-                if (villeExistante == null) {
-                    Ville ville = new Ville();
-                    ville.setNom(nomCommune);
-                    ville.setPopulation(populationTotale);
-                    ville.setPopulationMunicipale(populationMunicipale);
-                    ville.setPopulationCompteeApart(populationCompteeApart);
-                    ville.setPopulationTotale(populationTotale);
-                    ville.setCodeCommune(codeCommune);
-                    ville.setDepartement(departement);
-                    villeDao.save(ville);
-                } else {
-                    villeExistante.setNom(nomCommune);
-                    villeExistante.setPopulation(populationTotale);
-                    villeExistante.setPopulationMunicipale(populationMunicipale);
-                    villeExistante.setPopulationCompteeApart(populationCompteeApart);
-                    villeExistante.setPopulationTotale(populationTotale);
-                    villeExistante.setCodeCommune(codeCommune);
-                    villeExistante.setDepartement(departement);
-                }
+                em.getTransaction().commit();
+                System.out.println("Import terminé avec succès.");
             }
-
-            em.getTransaction().commit();
-            System.out.println("Import terminé avec succès.");
 
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -108,11 +134,43 @@ public class IntegrationRecensement {
     }
 
     /**
-     * Convertit une valeur texte du CSV en entier.
-     * Les nombres contiennent parfois des espaces, ex: 14 518.
+     * Charge les départements depuis un fichier CSV.
+     * Associe chaque code département à son nom.
      *
-     * @param valeur valeur texte du CSV
-     * @return entier parsé
+     * @param cheminFichier chemin du fichier Departements.csv
+     * @return map contenant le code du département et son nom
+     * @throws Exception erreur de lecture du fichier
+     */
+    private static Map<String, String> chargerDepartements(String cheminFichier) throws Exception {
+        Map<String, String> map = new HashMap<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(cheminFichier))) {
+            String ligne = reader.readLine();
+
+            while ((ligne = reader.readLine()) != null) {
+                String[] tokens = ligne.split(";");
+
+                if (tokens.length < 2) {
+                    continue;
+                }
+
+                String codeDepartement = tokens[0].trim();
+                String nomDepartement = tokens[1].trim();
+
+                map.put(codeDepartement, nomDepartement);
+            }
+        }
+
+        return map;
+    }
+
+    /**
+     * Convertit une chaîne de caractères en Long.
+     * Supprime les espaces présents dans les nombres.
+     *
+     * @param valeur valeur à convertir
+     * @return valeur convertie en Long
+     * @throws NumberFormatException si la valeur n'est pas un nombre valide
      */
     private static Long parseLong(String valeur) {
         return Long.parseLong(valeur.replace(" ", "").trim());

@@ -30,8 +30,6 @@ public class VilleDao {
     /**
      * Recherche une ville par nom et code commune.
      * Cela permet de rejouer l'import sans doublon.
-     *
-     * @param nom         nom de la commune
      * @param codeCommune code commune
      * @return ville trouvée ou null
      */
@@ -43,6 +41,15 @@ public class VilleDao {
         List<Ville> resultats = query.getResultList();
         return resultats.isEmpty() ? null : resultats.get(0);
     }
+
+    public Ville findByNom(String nomCommune) {
+        List<Ville> villes = em.createQuery(
+                        "SELECT v FROM Ville v WHERE v.nom = :nom", Ville.class)
+                .setParameter("nomCommune", nomCommune)
+                .getResultList();
+        return villes.isEmpty() ? null : villes.get(0);
+    }
+
     /**
      * Enregistre une ville dans la base de données.
      *
@@ -54,9 +61,9 @@ public class VilleDao {
     }
 
     public List<Ville> findAllOrderByPopulationDesc() {
-        return em.createQuery(
-                "SELECT v FROM Ville v ORDER v.populationTotale DESC", Ville.class).getResultList();
-
+        TypedQuery<Ville> query = em.createQuery(
+                "SELECT v FROM Ville v ORDER BY v.populationTotale DESC", Ville.class);
+        return query.getResultList();
     }
 
     public List<Ville> findByDepartementOrderByPopulationDesc(String codeDepartement) {
@@ -79,17 +86,15 @@ public class VilleDao {
                 "SELECT SUM(v.populationTotale) FROM Ville v WHERE v.departement.code = :code GROUP BY v.departement.code",
                 Ville.class);
         query.setParameter("code", codeDepartement);
-       return query.getResultList();
+        return query.getResultList();
     }
 
     public List<Ville> getPopulationByRegion(String nomRegion) {
-        TypedQuery<Ville> query = em.createQuery (
+        TypedQuery<Ville> query = em.createQuery(
                 "SELECT SUM(v.populationTotale) FROM Ville v WHERE v.departement.region.nom = :code GROUP BY v.departement.region.nom", Ville.class);
-                query.setParameter("nom", nomRegion);
-                return query.getResultList();
+        query.setParameter("nom", nomRegion);
+        return query.getResultList();
     }
-
-
 
 
 }

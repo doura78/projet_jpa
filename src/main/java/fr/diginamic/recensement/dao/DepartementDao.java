@@ -51,6 +51,12 @@ public class DepartementDao {
         return departement;
     }
 
+    /**
+     * Recherche un département à partir de son nom.
+     *
+     * @param nom nom du département recherché
+     * @return le département trouvée, ou null si aucun département ne correspond
+     */
     public Departement findByNom(String nom) {
         TypedQuery<Departement> query = em.createQuery(
                 "SELECT d FROM Departement d WHERE d.nom = :nom", Departement.class);

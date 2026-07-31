@@ -4,10 +4,8 @@ import jakarta.persistence.*;
 
 /**
  * Représente une ville issue du fichier de recensement.
- * <p>
  * Une ville possède un nom, une population, un code commune et appartient
  * à un département.
- * </p>
  */
 @Entity
 @Table(name = "ville")
@@ -73,8 +71,8 @@ public class Ville {
     /**
      * Construit une ville avec son nom, sa population, son code commune et son département.
      *
-     * @param nom nom de la ville
-     * @param population population totale
+     * @param nom         nom de la ville
+     * @param population  population totale
      * @param codeCommune code commune de la ville
      * @param departement département de rattachement
      */
@@ -141,6 +139,7 @@ public class Ville {
     public void setPopulationMunicipale(Long populationMunicipale) {
         this.populationMunicipale = populationMunicipale;
     }
+
     /**
      * Retourne la populationCompteeAPart de la ville.
      *
@@ -238,15 +237,14 @@ public class Ville {
      */
     @Override
     public String toString() {
-        return "Ville{" +
-                "id=" + id +
-                ", nom='" + nom + '\'' +
-                ", population=" + population +
-                ", populationMunicipale=" + populationMunicipale +
-                ", populationCompteeApart=" + populationCompteeApart +
-                ", populationTotale=" + populationTotale +
-                ", codeCommune='" + codeCommune + '\'' +
-                ", departement=" + departement +
-                '}';
+        return  id + " " +
+                nom + " " +
+                population + " " +
+                populationMunicipale + " " +
+                populationCompteeApart + " " +
+                populationTotale + " " +
+                codeCommune + " " +
+                departement +
+                " ";
     }
 }
